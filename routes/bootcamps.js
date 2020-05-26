@@ -14,22 +14,24 @@ const advancedQuery = require('../middleware/advancedQuery')
 // Include other resource routers
 const courseRouter = require('./courses')
 const router = express.Router()
+
+const { protect, authorize } = require('../middleware/auth')
 // Re-route
 router.use('/:bootcampId/courses', courseRouter)
 
 router
   .route('/')
   .get(advancedQuery(Bootcamp, 'courses'), getBootcamps)
-  .post(createBootcamp)
-  .delete(deleteAllBootcamp)
+  .post(protect, authorize('publisher', 'admin'), createBootcamp)
+  .delete(protect, deleteAllBootcamp)
 
 router.route('/radius/:zipcode/:distance').get(getBootcamsInRadius)
 
 router
   .route('/:id')
   .get(getBootcamp)
-  .put(updateBootcamp)
-  .delete(deleteBootcamp)
+  .put(protect, authorize('publisher', 'admin'), updateBootcamp)
+  .delete(protect, authorize('publisher', 'admin'), deleteBootcamp)
 
-router.route('/:id/photo').put(uploadPhotoBootcamp)
+router.route('/:id/photo').put(protect, authorize('publisher', 'admin'), uploadPhotoBootcamp)
 module.exports = router
